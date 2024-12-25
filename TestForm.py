@@ -12,8 +12,10 @@ def main(name_window):
 
     pos = Vector2(0, 0)
     fps = 60
-    player = Player(screen, speed=2)
-    cam = Camera(screen, FolowAt=player)
+    player = Player(screen, speed=2, pos=Vector2(0, 0))
+    cam = Camera(screen, FolowAt=player, pos=Vector2(0, 0))
+    other = BaseObject(screen, Vector2(0, 0))
+    other.set_view("Rect", size=Vector2(50, 50), color=(255, 0, 0))
     player.set_view("Circle", radius=20, color=(255, 255, 255))
 
     while running:
@@ -23,9 +25,9 @@ def main(name_window):
                 running = False
 
         screen.fill((0, 0, 0))
-        pygame.draw.rect(screen, (255, 0, 0), Rect(Vector2(0, 0)-Vector2(25, 25)-cam.position, Vector2(50, 50)))
-        player.FixedUpdate(events)
+        player.Movement(events)
         cam.FixedUpdate(events)
+        other.render(cam)
         player.render(cam)
 
         clock.tick(fps)

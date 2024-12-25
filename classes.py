@@ -4,7 +4,7 @@ import sys
 
 
 class BaseObject:
-    def __init__(self, screen, pos=Vector2(0, 0), rotation=0, sprite_type=None, visible=True):
+    def __init__(self, screen, pos, rotation=0, sprite_type=None, visible=True, **kwargs):
         self.screen = screen
         self.position = pos
         self.rotation = rotation
@@ -17,13 +17,13 @@ class BaseObject:
         self.additions = []
         self.render_settings = {}
 
-    def move_to(self, pos: Vector2, time=0):
+    def move_to(self, pos, time=0):
         if time == 0:
             self.position = pos
         else:
             pass
 
-    def move(self, rel: Vector2, time=0):
+    def move(self, rel, time=0):
         if time == 0:
             self.position += rel
         else:
@@ -90,7 +90,7 @@ class Player(BaseObject):
         self.speed = kwargs.pop("speed")
         super().__init__(*args, **kwargs)
 
-    def FixedUpdate(self, events):
+    def Movement(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_d:
                 self.position += Vector2(10, 0)
