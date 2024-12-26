@@ -12,11 +12,14 @@ def main(name_window):
 
     pos = Vector2(0, 0)
     fps = 60
-    player = Player(screen, speed=2, pos=Vector2(0, 0))
-    cam = Camera(screen, FolowAt=player, pos=Vector2(0, 0))
-    other = BaseObject(screen, Vector2(0, 0))
-    other.set_view("Rect", size=Vector2(50, 50), color=(255, 0, 0))
-    player.set_view("Circle", radius=20, color=(255, 255, 255))
+    player = Player(screen, speed=2, rend_order=1)
+    cam = Camera(screen, FolowAt=player)
+    other = BaseObject(screen)
+    other.set_view("Rect", "Base", size=Vector2(50, 50), color=(255, 0, 0))
+    player.set_view("Circle", "Base", radius=20, color=(255, 255, 255))
+
+    BaseScene = Scene(screen, cam)
+    BaseScene.objects += [player, other, cam]
 
     while running:
         events = pygame.event.get()
@@ -24,11 +27,8 @@ def main(name_window):
             if event.type == pygame.QUIT:
                 running = False
 
-        screen.fill((0, 0, 0))
-        player.Movement(events)
-        cam.FixedUpdate(events)
-        other.render(cam)
-        player.render(cam)
+        BaseScene.Update()
+        BaseScene.Render()
 
         clock.tick(fps)
         pygame.display.flip()

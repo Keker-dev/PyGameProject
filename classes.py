@@ -3,16 +3,41 @@ from pygame import Vector2, Rect
 import sys
 
 
-class BaseObject:
-    def __init__(self, screen, pos, rotation=0, sprite_type=None, visible=True, **kwargs):
+class Scene:
+    def __init__(self, screen, camera):
         self.screen = screen
-        self.position = pos
+        self.Camera = camera
+        self.objects = []
+
+    def Render(self):
+        self.screen.fill((0, 0, 0))
+        UI_objects = sorted(list(filter(lambda x: x.layer == "UI", self.objects)), key=lambda a: a.render_order)
+        Base_objects = sorted(list(filter(lambda x: x.layer != "UI", self.objects)), key=lambda a: a.render_order)
+        for i in Base_objects:
+            i.render(self.Camera)
+        for i in UI_objects:
+            i.render(self.Camera)
+
+    def Update(self):
+        for i in self.objects:
+            i.OrderUpdate()
+
+
+class BaseObject:
+    def __init__(self, screen, pos=(0, 0), rotation=0, sprite_type=None, visible=True, rend_order=0, **kwargs):
+        self.screen = screen
+        if isinstance(pos, Vector2):
+            self.position = pos
+        else:
+            self.position = Vector2(*pos)
         self.rotation = rotation
         self.sprite_type = sprite_type
         self.visible = visible
 
         self.size = 1
         self.color = (255, 255, 255)
+        self.render_order = rend_order
+        self.layer = "Base"
         self.childrens = []
         self.additions = []
         self.render_settings = {}
@@ -30,7 +55,10 @@ class BaseObject:
             pass
 
     def render(self, cam):
-        cam_pos = Vector2(cam.position.x, cam.position.y)
+        if self.layer == "UI":
+            cam_pos = Vector2(0, 0)
+        else:
+            cam_pos = Vector2(cam.position.x, cam.position.y)
         if self.sprite_type is None:
             return
         if not self.visible:
@@ -65,9 +93,10 @@ class BaseObject:
             rot_rect = rot.get_rect(center=self.position - cam_pos)
             self.screen.blit(rot, rot_rect)
 
-    def set_view(self, sprite_type, **kwargs):
-        if sprite_type in [None, "Circle", "Rect", "Image"]:
+    def set_view(self, sprite_type, layer, **kwargs):
+        if sprite_type in [None, "Circle", "Rect", "Image"] and layer in "Base|UI":
             self.sprite_type = sprite_type
+            self.layer = layer
             self.render_settings = kwargs
 
     def OrderUpdate(self):
@@ -90,7 +119,7 @@ class Player(BaseObject):
         self.speed = kwargs.pop("speed")
         super().__init__(*args, **kwargs)
 
-    def Movement(self, events):
+    def FixedUpdate(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_d:
                 self.position += Vector2(10, 0)
